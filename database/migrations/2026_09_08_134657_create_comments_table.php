@@ -13,9 +13,10 @@ return new class extends Migration
     {
         Schema::create('comments', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade');     // 留言者
-            $table->foreignId('location_id')->constrained()->onDelete('cascade'); // 所屬地點
             $table->text('content');
+            $table->integer('rating');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
+            $table->foreignId('location_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }

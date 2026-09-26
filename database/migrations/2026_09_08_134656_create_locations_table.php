@@ -13,11 +13,12 @@ return new class extends Migration
     {
         Schema::create('locations', function (Blueprint $table) {
             $table->id();
-            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // 發布的使用者
-            $table->string('name');             // 地點名稱
-            $table->text('description')->nullable(); // 地點描述（允許空值）
-            $table->decimal('latitude', 10, 7);  // 緯度
-            $table->decimal('longitude', 10, 7); // 經度
+            $table->string('name');
+            $table->string('address');
+            $table->double('latitude');
+            $table->double('longitude');
+            $table->text('description')->nullable();
+            $table->foreignId('user_id')->constrained()->onDelete('cascade');
             $table->timestamps();
         });
     }
