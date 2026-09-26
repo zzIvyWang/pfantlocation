@@ -1,6 +1,9 @@
 <?php
 
-use App\Http\Controllers\LocationController;
-use Illuminate\Support\Facades\Route;
+use App\Models\Location;
 
-Route::get('/', [LocationController::class, 'index']);
+Route::get('/', function () {
+    // 撈出資料並傳給 resources/views/welcome.blade.php
+    $locations = Location::with('comments.user')->get();
+    return view('welcome', compact('locations'));
+});
