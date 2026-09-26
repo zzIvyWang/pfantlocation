@@ -8,11 +8,12 @@ class Location extends Model
 {
     //
     protected $fillable = [
-        'user_id',
         'name',
-        'description',
+        'address',
         'latitude',
         'longitude',
+        'description',
+        'user_id',
     ];
 
     // 地點屬於發布的使用者
@@ -22,7 +23,7 @@ class Location extends Model
     }
 
     // 地點擁有許多留言
-    public function comments(): HasMany
+    public function comments()
     {
         return $this->hasMany(Comment::class);
     }
