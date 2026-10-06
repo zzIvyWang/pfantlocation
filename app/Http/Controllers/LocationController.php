@@ -3,74 +3,81 @@
 namespace App\Http\Controllers;
 
 use App\Models\Location;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\View\View;
 
 class LocationController extends Controller
 {
-    // 1. 列表頁 (Read All)
-    public function index()
+    public function welcome(): View
     {
-        $locations = Location::with('comments.user')->latest()->get();
+        return view('welcome');
+    }
+
+    public function index(): View
+    {
+        $locations = Location::with(['comments.user', 'user'])->latest()->get();
+
         return view('locations.index', compact('locations'));
     }
 
-    // 2. 顯示新增表單 (Create Form)
-    public function create()
+    public function create(): View
     {
         return view('locations.create');
     }
 
-    // 3. 處理表單新增資料 (Store)
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        // 表單驗證 (Form Validation)
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'description' => 'required|string',
+            'name' => ['required', 'string', 'max:255'],
+            'address' => ['required', 'string', 'max:255'],
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
+            'description' => ['nullable', 'string', 'max:5000'],
         ]);
 
-        // 自動寫入當前登入使用者的 ID
         $request->user()->locations()->create($validated);
 
-        return redirect()->route('locations.index')->with('success', 'Pfand Location created successfully!');
+        return redirect()->route('locations.index')->with('success', 'Location created successfully.');
     }
 
-    // 4. 顯示單一地點詳細資料 (Read One)
-    public function show(Location $location)
+    public function show(Location $location): View
     {
-        $location->load('comments.user');
+        $location->load(['comments.user', 'user']);
+
         return view('locations.show', compact('location'));
     }
 
-    // 5. 顯示編輯表單 (Edit Form)
-    public function edit(Location $location)
+    public function edit(Request $request, Location $location): View
     {
+        abort_unless($request->user()->role === 'admin', 403);
+
         return view('locations.edit', compact('location'));
     }
 
-    // 6. 處理更新資料 (Update)
-    public function update(Request $request, Location $location)
+    public function update(Request $request, Location $location): RedirectResponse
     {
+        abort_unless($request->user()->role === 'admin', 403);
+
         $validated = $request->validate([
-            'name' => 'required|string|max:255',
-            'address' => 'required|string|max:255',
-            'latitude' => 'required|numeric',
-            'longitude' => 'required|numeric',
-            'description' => 'required|string',
+            'name' => ['required', 'string', 'max:255'],
+            'address' => ['required', 'string', 'max:255'],
+            'latitude' => ['required', 'numeric', 'between:-90,90'],
+            'longitude' => ['required', 'numeric', 'between:-180,180'],
+            'description' => ['nullable', 'string', 'max:5000'],
         ]);
 
         $location->update($validated);
 
-        return redirect()->route('locations.index')->with('success', 'Location updated successfully!');
+        return redirect()->route('locations.show', $location)->with('success', 'Location updated successfully.');
     }
 
-    // 7. 刪除地點 (Delete)
-    public function destroy(Location $location)
+    public function destroy(Request $request, Location $location): RedirectResponse
     {
+        abort_unless($request->user()->role === 'admin', 403);
+
         $location->delete();
-        return redirect()->route('locations.index')->with('success', 'Location deleted successfully!');
+
+        return redirect()->route('locations.index')->with('success', 'Location deleted successfully.');
     }
 }
