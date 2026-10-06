@@ -1,3 +1,5 @@
+@CODE_MENTOR.md
+
 <laravel-boost-guidelines>
 === foundation rules ===
 
