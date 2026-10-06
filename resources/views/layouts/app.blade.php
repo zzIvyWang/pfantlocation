@@ -12,7 +12,7 @@
         <link href="https://fonts.bunny.net/css?family=figtree:400,500,600&display=swap" rel="stylesheet" />
 
         <!-- Scripts -->
-        <script src="https://cdn.tailwindcss.com"></script>
+        @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased">
         <div class="min-h-screen bg-gray-100">
@@ -29,6 +29,19 @@
 
             <!-- Page Content -->
             <main>
+                @if (session('success'))
+                    <div class="mx-auto mt-6 max-w-7xl rounded-md bg-green-100 px-4 py-3 text-green-800" role="status">{{ session('success') }}</div>
+                @endif
+                @if ($errors->any())
+                    <div class="mx-auto mt-6 max-w-7xl rounded-md bg-red-100 px-4 py-3 text-red-800" role="alert">
+                        <p class="font-semibold">Please correct the following errors:</p>
+                        <ul class="list-inside list-disc">
+                            @foreach ($errors->all() as $error)
+                                <li>{{ $error }}</li>
+                            @endforeach
+                        </ul>
+                    </div>
+                @endif
                 {{ $slot }}
             </main>
         </div>
