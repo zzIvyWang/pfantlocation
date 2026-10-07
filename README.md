@@ -1,58 +1,112 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+# Berlin Pfand Finder
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+A Laravel web app for finding and sharing places in Berlin where you can return Pfand (deposit) bottles. Visitors can browse locations and read reviews; registered users can add new locations and leave a rating with a comment; admins can edit and delete locations.
 
-## About Laravel
+## Features
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+- Browse all Pfand return locations, with address, coordinates, description and who added them
+- Location detail page with all reviews (rating 1–5 and comment)
+- Register / log in (Laravel Breeze)
+- Logged-in users can add a location and post reviews
+- Admins can edit and delete locations
+- Form validation with error messages on every form
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+## Tech stack
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+- PHP 8.4 / Laravel 13
+- Laravel Breeze (Blade + Alpine.js) for authentication
+- Tailwind CSS v3, bundled with Vite
+- SQLite (default from `.env.example`)
+- Pest for tests
 
-## Learning Laravel
+## Requirements
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+- PHP 8.3 or newer
+- Composer
+- Node.js 20.19+ or 22.12+ (current LTS recommended) and npm
 
-In addition, [Laracasts](https://laracasts.com) contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
-
-You can also watch bite-sized lessons with real-world projects on [Laravel Learn](https://laravel.com/learn), where you will be guided through building a Laravel application from scratch while learning PHP fundamentals.
-
-## Agentic Development
-
-Laravel's predictable structure and conventions make it ideal for AI coding agents like Claude Code, Cursor, and GitHub Copilot. Install [Laravel Boost](https://laravel.com/docs/ai) to supercharge your AI workflow:
+## Installation
 
 ```bash
-composer require laravel/boost --dev
-
-php artisan boost:install
+git clone https://github.com/zzIvyWang/pfantlocation.git
+cd pfantlocation
+composer setup
+php artisan migrate:fresh --seed
 ```
 
-Boost provides your agent 15+ tools and skills that help agents build Laravel applications while following best practices.
+`composer setup` installs the PHP and npm dependencies, creates `.env` from `.env.example`, generates the app key, creates the SQLite database and builds the frontend assets (`npm run build`).
 
-## Contributing
+<details>
+<summary>Manual installation (same steps one by one)</summary>
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+```bash
+composer install
+cp .env.example .env
+php artisan key:generate
+php artisan migrate:fresh --seed
+npm install
+npm run build
+```
 
-## Code of Conduct
+If `migrate:fresh` reports that the SQLite database does not exist, create the empty file first with `touch database/database.sqlite`.
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+</details>
 
-## Security Vulnerabilities
+## Running the app
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+- **Laravel Herd:** if the project folder is inside your Herd directory, open `http://pfantlocation.test`.
+- **Without Herd:** run `php artisan serve` and open `http://127.0.0.1:8000`.
 
-## License
+The frontend is already built by the installation step. Only run `npm run dev` if you change CSS, JavaScript or Blade files and want live reloading.
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+## Test accounts
+
+| Role | Email | Password |
+|---|---|---|
+| Admin | `admin@admin.com` | `password` |
+
+To try the app as a normal user, register a new account via **Register**.
+
+## Seeded data
+
+`php artisan migrate:fresh --seed` creates:
+
+- 1 admin user (see above) and 10 normal users
+- 10 Pfand locations around Berlin, added by the admin
+- 2 reviews per location, written by random normal users
+
+## Who can do what
+
+| Action | Guest | Logged-in user | Admin |
+|---|:---:|:---:|:---:|
+| View locations and reviews | ✅ | ✅ | ✅ |
+| Add a location | | ✅ | ✅ |
+| Post a review | | ✅ | ✅ |
+| Edit / delete a location | | | ✅ |
+
+## Data model
+
+- **User** (`name`, `email`, `password`, `role`: `user` or `admin`) — has many locations
+- **Location** (`name`, `address`, `latitude`, `longitude`, `description`) — belongs to a user, has many comments
+- **Comment** (`content`, `rating` 1–5) — belongs to a user and a location
+
+## Running the tests
+
+```bash
+php artisan test
+```
+
+## Where to find things
+
+| What | Where |
+|---|---|
+| Routes | `routes/web.php` |
+| Location CRUD and admin checks | `app/Http/Controllers/LocationController.php` |
+| Posting reviews | `app/Http/Controllers/CommentController.php` |
+| Models and relationships | `app/Models/` |
+| Migrations, factories, seeder | `database/` |
+| Views (shared layout in `layouts/app.blade.php`) | `resources/views/` |
+
+## Use of AI
+
+During development, Claude Code was used mainly as a mentor (rules in `CODE_MENTOR.md`): it explains concepts and reviews code, and only writes code when explicitly asked.
